@@ -2,36 +2,33 @@ const express = require("express");
 
 const app = express();
 
+const connectDB = require("./database/database.js");
 
-app.get("/user",(req,res) =>{
-    console.log("GET API CALL")
-    res.send("GET USER CALL");
+const User = require("./models/user.js");
+
+
+app.post("/signup", async (req,res) => {
+  const user = new User({
+    firstName:"Sachin",
+    lastName:"Tendulkar",
+    emailId :"tech.sachin@gmail.com",
+    password : "India"
+  })
+  try{
+    await user.save();
+    res.send("User saved successfully ")
+  }catch(err){
+     res.status(400).send("Error saving the user :"+ err.message);
+  }
+  
 });
 
-app.post("/user", (req,res) => {
-    res.send(" POST user call");
-    console.log(req.body)
-});
+connectDB().then(()=>{
+    console.log("Database connection successful ");
+    app.listen(7777, ()=>{
+        console.log("Server is successfully connected to port 7777")
+    });
 
-app.patch("/user" , (req,res) =>{
-    res.send("PATCH USER CALL");
-});
-
-app.delete("/user", (req,res) => {
-    res.send("DELETE USER API CALL");
-})
-
-app.use("/hello", (req,res) => {
-    res.send("Hello hello");
-});
-
-app.use("/", (req,res) => {
-    res.send("Hello from dashboard 222");
-});
-
-
-
-
-app.listen(7777 , () =>{
-    console.log("Server is succesfully created ");
+}).catch((err) =>{
+    console.log("Database cannot be connected")
 });

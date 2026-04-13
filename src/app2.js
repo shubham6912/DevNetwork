@@ -13,7 +13,7 @@ app.use("/user",
     (req,res , next ) => {
         console.log("Second Route handler CALL ");
         next();
-    },
+    }],
     (req,res , next) => {
         console.log("Third Route handler CALL ");
         //res.send("GET USER CALL BLOCK 3");
@@ -23,7 +23,7 @@ app.use("/user",
         console.log("Fourth Route handler CALL ");
         res.send("Last block response")
         
-    }]
+    }
 
 );
 

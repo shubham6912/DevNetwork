@@ -6,12 +6,30 @@ const connectDB = require("./database/database.js");
 
 const User = require("./models/user.js");
 
+const { validateSignUp } = require("./utils/validation.js");
+
+const bcrypt = require("bcrypt");
+
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  console.log(req.body)
+
+
   const user = new User(req.body)
+  const { firstName, lastName, emailId, password } = req.body;
   try {
+
+    validateSignUp(req);
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password:hashPassword
+    })
+
     await user.save();
     res.send("User saved successfully ")
   } catch (err) {
@@ -19,6 +37,15 @@ app.post("/signup", async (req, res) => {
   }
 
 });
+
+app.post("/login", async(req,res) => {
+ try{
+
+ }catch(err){
+  res.status(400).send("Error authenticating user :" + err.message);
+ }
+
+})
 
 
 app.delete("/user", async (req, res) => {
@@ -36,7 +63,8 @@ app.patch("/user", async (req, res) => {
 
     const updatedUser = await User.findOneAndUpdate(
       { emailId: userEmailId },   // filter
-      req.body                   // update daa
+      req.body,
+      { runValidators: true, new: true }
     );
 
     if (!updatedUser) {

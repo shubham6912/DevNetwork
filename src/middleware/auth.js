@@ -1,32 +1,30 @@
+const jwtT = require("jsonwebtoken")
+const User = require("../models/user.js");
 
 
-const adminAuth=(req,res,next) =>{
 
-    const token="abc";
-    console.log("Autheticating admin token");
-    const isAdminAuthorized = token === "abc";
-    
-    if(isAdminAuthorized){
-        next();
-    }else{
-        res.status(401).send("Authintication failed");
+const userAuth = async (req, res, next) => {
+
+    const token = req.cookies.token;
+
+    if (!token) {
+
+        res.status(400).send("ERROR Token is not present please login")
+    }
+    const decodedId = await jwtT.verify(token, "DevTinder@799");
+
+
+    const user = await User.findById(decodedId);
+
+    if (!user) {
+        res.status(400).send("User not found");
     }
 
-};
+    req.user = user;
+    next();
 
-const userAuth = (req,res,next ) => {
-    const token = "abc";
 
-    console.log("User authentication token ");
-
-    const userAuthenticated = token === "abc";
-
-    if(userAuthenticated){
-        next();
-    }else {
-        res.status(401).send("User authentication failed")
-    }
 }
 
-module.exports={adminAuth , userAuth};
+module.exports = { userAuth };
 

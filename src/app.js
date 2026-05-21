@@ -10,7 +10,16 @@ const { validateSignUp } = require("./utils/validation.js");
 
 const bcrypt = require("bcrypt");
 
+const cookieParser = require("cookie-parser");
+
+const { userAuth } = require("./middleware/auth.js")
+
+const jwt = require("jsonwebtoken");
+
 app.use(express.json());
+
+app.use(cookieParser());
+
 
 app.post("/signup", async (req, res) => {
 
@@ -27,10 +36,11 @@ app.post("/signup", async (req, res) => {
       firstName,
       lastName,
       emailId,
-      password:hashPassword
+      password: hashPassword
     })
 
     await user.save();
+
     res.send("User saved successfully ")
   } catch (err) {
     res.status(400).send("Error saving the user :" + err.message);
@@ -38,79 +48,51 @@ app.post("/signup", async (req, res) => {
 
 });
 
-app.post("/login", async(req,res) => {
- try{
-
- }catch(err){
-  res.status(400).send("Error authenticating user :" + err.message);
- }
-
-})
-
-
-app.delete("/user", async (req, res) => {
-  const userEmailId = req.body.emailId;
-  await User.deleteOne({ emailId: userEmailId });
-
-  res.send("User deleted succesfully");
-
-});
-
-app.patch("/user", async (req, res) => {
+app.post("/login", async (req, res) => {
   try {
-    const userEmailId = req.body.emailId;
-    console.log(userEmailId);
 
-    const updatedUser = await User.findOneAndUpdate(
-      { emailId: userEmailId },   // filter
-      req.body,
-      { runValidators: true, new: true }
-    );
+    const { emailId, password } = req.body;
 
-    if (!updatedUser) {
-      return res.status(404).send("User not found");
+    const user = await User.findOne({ emailId: emailId });
+
+    if (!user) {
+      throw new Error("Invalid Credentials");
     }
 
-    res.send({
-      message: "User updated successfully",
-      user: updatedUser
-    });
+    const isPasswordValid = await user.validatePassword(password);
 
-  } catch (err) {
-    res.status(500).send({
-      message: "Error updating user",
-      error: err.message
-    });
-  }
-});
+    if (isPasswordValid) {
+      const jwtToken = user.getJWT();
 
-
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.emailId;
-  console.log(userEmail)
-  try {
-    const users = await User.find({ emailId: userEmail });
-    if (users.length == 0) {
-      res.status(404).send("User not found");
+      res.cookie('token', jwtToken, {
+        expires: new Date(Date.now() + 8 * 60 * 60 * 1000)   // 8 hours
+      });
+      res.send("Login successful");
     } else {
-      res.send(users);
+      throw new Error("Invalid Credentials");
     }
 
-
   } catch (err) {
-    res.send(500).send("Something went wrong");
+    res.status(400).send("Error authenticating user :" + err.message);
   }
 
-});
+})
 
-app.get("/feed", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
+
   try {
-    const users = await User.find({});
-    res.send(users)
+    const userProfile = req.user;
+    res.send(userProfile);
   } catch (err) {
-    res.status(500).send("No users found")
+    console.log(err)
+    res.status(400).send("Error reading profile");
   }
 })
+
+
+
+
+
 
 connectDB().then(() => {
   console.log("Database connection successful ");

@@ -12,10 +12,12 @@ app.use(express.json());
 app.use(cookieParser());
 
 const authRouter = require("./router/authRouter");
-const profileRouter = require("./router/profileRouter")
+const profileRouter = require("./router/profileRouter");
+const requestRouter = require("./router/request");
 
 app.use("/",authRouter);
 app.use("/",profileRouter);
+app.use("/",requestRouter);
 
 
 

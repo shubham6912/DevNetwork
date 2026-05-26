@@ -16,16 +16,18 @@ requestRouter.post("/request/send/:status/:toUserId",
             const toUserId = req.params.toUserId;
             const status = req.params.status;
 
-            const allowedStatus = ["ignored", "accepted"];
+           
+
+            const allowedStatus = ["ignore", "interested"];
 
             if (!allowedStatus.includes(status)) {
                 return res.status(400).send("Invalid status type");
             }
 
-            const toUserExists = await UserActivation.findById(toUserId);
+            const toUserExists = await User.findById(toUserId);
 
             if (!toUserExists) {
-                return res.status(404).json({ message: " User not found " })
+                return res.status(404).json({ message : " User not found "})
             }
 
             const existingConnectionRequest = await ConnectionRequest.findOne({
@@ -33,10 +35,10 @@ requestRouter.post("/request/send/:status/:toUserId",
                     { fromUserId, toUserId },
                     { fromUserId: toUserId, toUserId: fromUserId }
                 ]
-            })
+            });
 
             if (existingConnectionRequest) {
-                res.status(400).send("Existing connection request already exists");
+                return res.status(400).send("Existing connection request already exists");
             }
 
             const connectionRequest = new ConnectionRequest({
@@ -48,14 +50,14 @@ requestRouter.post("/request/send/:status/:toUserId",
             const data = await connectionRequest.save();
 
             res.json({
-                message: req.user.firstName + "is " + status + " in " + toUser.firstName,
+                message: req.user.firstName + " is " + status + " in " + toUserExists.firstName,
                 data,
             })
 
 
 
         } catch (err) {
-            res.status(500).status("ERROR ")
+            res.status(500).send(err.message)
         }
     }
 )

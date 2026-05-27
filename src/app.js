@@ -14,10 +14,13 @@ app.use(cookieParser());
 const authRouter = require("./router/authRouter");
 const profileRouter = require("./router/profileRouter");
 const requestRouter = require("./router/request");
+const userRouter = require("./router/userRouter");
 
 app.use("/",authRouter);
 app.use("/",profileRouter);
 app.use("/",requestRouter);
+app.use("/",userRouter);
+
 
 
 

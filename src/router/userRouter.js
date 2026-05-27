@@ -40,7 +40,7 @@ userRouter.get("/user/connection", userAuth, async (req, res) => {
     try {
 
         const loggedInUser = req.user;
-        console.log(loggedInUser)
+        
 
         const connections = await ConnectionRequest.find({
          $or:[   

@@ -52,7 +52,7 @@ authRouter.post("/login", async (req, res) => {
       res.cookie('token', jwtToken, {
         expires: new Date(Date.now() + 8 * 60 * 60 * 1000)   // 8 hours
       });
-      res.send("Login successful");
+      res.send(user);
     } else {
       throw new Error("Invalid Credentials");
     }
